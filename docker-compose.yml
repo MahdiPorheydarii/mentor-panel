@@ -13,7 +13,7 @@ services:
       MB_DB_ID: ${MB_DB_ID:-3}
       NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
       AUTH_SECRET: ${AUTH_SECRET:-}
-      TEACHERS_JSON: ${TEACHERS_JSON:-[]}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://yasan:judge0_password@postgres:5432/yasan}
     expose:
       - "3000"
     extra_hosts:

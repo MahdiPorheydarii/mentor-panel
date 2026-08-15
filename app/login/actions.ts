@@ -1,20 +1,18 @@
 'use server';
 
-import { createSession, loadTeachers, setSessionCookie } from '@/lib/auth';
+import { findAndVerifyTeacher, createSession, setSessionCookie } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
 export async function loginAction(formData: FormData) {
   const username = (formData.get('username') as string | null)?.trim() ?? '';
   const password = (formData.get('password') as string | null) ?? '';
 
-  const teachers = loadTeachers();
-  const teacher = teachers.find((t) => t.username === username);
-
-  if (!teacher || teacher.password !== password) {
+  const session = await findAndVerifyTeacher(username, password);
+  if (!session) {
     return { error: 'نام کاربری یا رمز عبور اشتباه است.' };
   }
 
-  const token = await createSession({ username: teacher.username, name: teacher.name });
+  const token = await createSession(session);
   await setSessionCookie(token);
   redirect('/');
 }

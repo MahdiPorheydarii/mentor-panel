@@ -1,5 +1,7 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { getPool } from './db';
+import bcrypt from 'bcryptjs';
 
 const COOKIE = 'mentor_session';
 const secret = new TextEncoder().encode(
@@ -11,20 +13,24 @@ export interface SessionPayload {
   name: string;
 }
 
-export interface TeacherConfig {
-  username: string;
-  name: string;
-  password: string;
-}
-
-export function loadTeachers(): TeacherConfig[] {
-  const raw = process.env.TEACHERS_JSON;
-  if (!raw) return [];
+export async function findAndVerifyTeacher(
+  username: string,
+  password: string
+): Promise<SessionPayload | null> {
   try {
-    return JSON.parse(raw) as TeacherConfig[];
-  } catch {
-    console.error('TEACHERS_JSON is invalid JSON');
-    return [];
+    const pool = getPool();
+    const { rows } = await pool.query<{ username: string; name: string; password_hash: string }>(
+      'SELECT username, name, password_hash FROM mentor_teachers WHERE username = $1 LIMIT 1',
+      [username]
+    );
+    if (!rows.length) return null;
+    const teacher = rows[0];
+    const ok = await bcrypt.compare(password, teacher.password_hash);
+    if (!ok) return null;
+    return { username: teacher.username, name: teacher.name };
+  } catch (err) {
+    console.error('[auth] DB error:', err);
+    return null;
   }
 }
 
@@ -58,7 +64,7 @@ export async function setSessionCookie(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7,
     path: '/',
   });
 }
