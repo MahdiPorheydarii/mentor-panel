@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import { Search, Monitor, XCircle, AlertTriangle } from 'lucide-react';
-import { mockStudents } from '@/lib/mock-data';
 import type { Student, StudentStatus, SubscriptionPlan } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 import { PlanBadge } from './PlanBadge';
@@ -11,7 +10,7 @@ import { CancellationModal } from './modals/CancellationModal';
 import { ExternalPlatformModal } from './modals/ExternalPlatformModal';
 import { formatShortDate } from '@/lib/utils';
 
-export function StudentsTable() {
+export function StudentsTable({ students }: { students: Student[] }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StudentStatus | 'all'>('all');
   const [planFilter, setPlanFilter] = useState<SubscriptionPlan | 'all'>('all');
@@ -19,7 +18,7 @@ export function StudentsTable() {
   const [externalStudent, setExternalStudent] = useState<Student | null>(null);
 
   const filtered = useMemo(() => {
-    return mockStudents.filter((s) => {
+    return students.filter((s) => {
       const matchesSearch =
         !search ||
         s.name.includes(search) ||

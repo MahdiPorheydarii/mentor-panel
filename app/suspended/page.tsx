@@ -1,12 +1,13 @@
-'use client';
-
-import { mockStudents } from '@/lib/mock-data';
+import { fetchStudents } from '@/lib/queries';
 import { PlanBadge } from '@/components/dashboard/PlanBadge';
 import { formatShortDate } from '@/lib/utils';
 import { UserMinus } from 'lucide-react';
 
-export default function SuspendedPage() {
-  const suspended = mockStudents.filter((s) => s.status === 'suspended');
+export const dynamic = 'force-dynamic';
+
+export default async function SuspendedPage() {
+  const allStudents = await fetchStudents();
+  const suspended = allStudents.filter((s) => s.status === 'suspended');
 
   return (
     <div className="space-y-6">
@@ -22,13 +23,13 @@ export default function SuspendedPage() {
 
       {suspended.length > 0 && (
         <div className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-          ⚠️ دانشجویان زیر در حال حاضر حساب‌شان تعلیق شده است و به کلاس‌ها دسترسی ندارند.
+          دانشجویان زیر در حال حاضر حساب‌شان در Moodle تعلیق شده و به کلاس‌ها دسترسی ندارند.
         </div>
       )}
 
       <div className="rounded-xl bg-white shadow-sm overflow-hidden border border-slate-100">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[750px] text-sm">
+          <table className="w-full min-w-[700px] text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">دانشجو</th>
@@ -36,7 +37,7 @@ export default function SuspendedPage() {
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">ترم</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">تاریخ شروع</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">پلن</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">دلیل تعلیق</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">آخرین ورود</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -51,14 +52,12 @@ export default function SuspendedPage() {
                       <p className="font-medium text-slate-800">{s.name}</p>
                       <p className="text-xs text-slate-400" dir="ltr">{s.username}</p>
                     </td>
-                    <td className="px-4 py-3.5 text-slate-700">{s.course}</td>
+                    <td className="px-4 py-3.5 text-slate-700">{s.phase || s.course}</td>
                     <td className="px-4 py-3.5 text-slate-600 text-xs">{s.term}</td>
                     <td className="px-4 py-3.5 text-slate-600 text-xs">{formatShortDate(s.startDate)}</td>
                     <td className="px-4 py-3.5"><PlanBadge plan={s.subscriptionPlan} /></td>
-                    <td className="px-4 py-3.5">
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-2.5 py-0.5 text-xs font-medium text-red-700">
-                        {s.suspensionReason || 'نامشخص'}
-                      </span>
+                    <td className="px-4 py-3.5 text-slate-500 text-xs">
+                      {s.lastContact ? formatShortDate(s.lastContact) : '—'}
                     </td>
                   </tr>
                 ))
