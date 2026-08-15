@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Search, Monitor, XCircle, AlertTriangle } from 'lucide-react';
-import type { Student, StudentStatus, SubscriptionPlan } from '@/lib/types';
+import type { Student, SubscriptionPlan } from '@/lib/types';
 import { StatusBadge } from './StatusBadge';
 import { PlanBadge } from './PlanBadge';
 import { ProgressBar } from './ProgressBar';
@@ -10,9 +10,11 @@ import { CancellationModal } from './modals/CancellationModal';
 import { ExternalPlatformModal } from './modals/ExternalPlatformModal';
 import { formatShortDate } from '@/lib/utils';
 
+type StatusFilterValue = 'all' | 'active' | 'suspended' | 'withdrawn' | 'suspended_or_withdrawn';
+
 export function StudentsTable({ students }: { students: Student[] }) {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StudentStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('all');
   const [planFilter, setPlanFilter] = useState<SubscriptionPlan | 'all'>('all');
   const [cancellationStudent, setCancellationStudent] = useState<Student | null>(null);
   const [externalStudent, setExternalStudent] = useState<Student | null>(null);
@@ -24,17 +26,23 @@ export function StudentsTable({ students }: { students: Student[] }) {
         s.name.includes(search) ||
         s.username.toLowerCase().includes(search.toLowerCase()) ||
         s.course.includes(search);
-      const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
+
+      let matchesStatus = true;
+      if (statusFilter === 'suspended_or_withdrawn') {
+        matchesStatus = s.status === 'suspended' || s.status === 'withdrawn';
+      } else if (statusFilter !== 'all') {
+        matchesStatus = s.status === statusFilter;
+      }
+
       const matchesPlan = planFilter === 'all' || s.subscriptionPlan === planFilter;
       return matchesSearch && matchesStatus && matchesPlan;
     });
-  }, [search, statusFilter, planFilter]);
+  }, [search, statusFilter, planFilter, students]);
 
   return (
     <>
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
           <input
@@ -46,19 +54,18 @@ export function StudentsTable({ students }: { students: Student[] }) {
           />
         </div>
 
-        {/* Status filter */}
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as StudentStatus | 'all')}
+          onChange={(e) => setStatusFilter(e.target.value as StatusFilterValue)}
           className="rounded-lg border border-slate-200 bg-white py-2 px-3 text-sm text-slate-700 shadow-sm focus:border-blue-500 cursor-pointer"
         >
           <option value="all">همه وضعیت‌ها</option>
           <option value="active">فعال</option>
           <option value="suspended">معلق</option>
           <option value="withdrawn">انصراف</option>
+          <option value="suspended_or_withdrawn">معلق یا انصراف</option>
         </select>
 
-        {/* Plan filter */}
         <select
           value={planFilter}
           onChange={(e) => setPlanFilter(e.target.value as SubscriptionPlan | 'all')}
@@ -71,37 +78,38 @@ export function StudentsTable({ students }: { students: Student[] }) {
         </select>
 
         <span className="text-xs text-slate-400 mr-auto">
-          {filtered.length} دانشجو
+          {filtered.length} فراگیر
         </span>
       </div>
 
       {/* Table card */}
       <div className="rounded-xl bg-white shadow-sm overflow-hidden border border-slate-100">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1050px] text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 w-[200px]">دانشجو</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 w-[180px]">فراگیر</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">وضعیت</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">درس و ترم</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">تاریخ شروع</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">هفته جاری</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">پلن</th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 min-w-[150px]">فاز پیشرفت</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">آخرین ورود</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">عملیات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400 text-sm">
-                    دانشجویی با این مشخصات یافت نشد.
+                  <td colSpan={9} className="px-4 py-12 text-center text-slate-400 text-sm">
+                    فراگیری با این مشخصات یافت نشد.
                   </td>
                 </tr>
               ) : (
                 filtered.map((student) => (
                   <tr key={student.id} className="hover:bg-slate-50 transition-colors">
-                    {/* Student name + username */}
+                    {/* Name + username */}
                     <td className="px-4 py-3.5">
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-2">
@@ -135,12 +143,12 @@ export function StudentsTable({ students }: { students: Student[] }) {
                       {formatShortDate(student.startDate)}
                     </td>
 
-                    {/* Current week + topic */}
+                    {/* Current week */}
                     <td className="px-4 py-3.5">
                       <div className="flex flex-col gap-0.5">
                         <span className="text-slate-800 font-medium">هفته {student.currentWeek}</span>
-                        <span className="text-xs text-slate-400 max-w-[140px] truncate" title={student.currentTopic}>
-                          {student.currentTopic.replace(/^هفته \d+ - /, '')}
+                        <span className="text-xs text-slate-400 max-w-[120px] truncate" title={student.currentTopic}>
+                          {student.currentTopic.replace(/^هفته \d+ — /, '')}
                         </span>
                       </div>
                     </td>
@@ -153,6 +161,11 @@ export function StudentsTable({ students }: { students: Student[] }) {
                     {/* Progress */}
                     <td className="px-4 py-3.5">
                       <ProgressBar progress={student.progress} phase={student.phase} />
+                    </td>
+
+                    {/* Last access */}
+                    <td className="px-4 py-3.5 text-xs text-slate-500">
+                      {formatShortDate(student.lastAccess ?? '')}
                     </td>
 
                     {/* Actions */}
@@ -182,13 +195,13 @@ export function StudentsTable({ students }: { students: Student[] }) {
         </div>
       </div>
 
-      {/* Modals */}
       <CancellationModal
         student={cancellationStudent}
         onClose={() => setCancellationStudent(null)}
       />
       <ExternalPlatformModal
         student={externalStudent}
+        allStudents={students}
         onClose={() => setExternalStudent(null)}
       />
     </>

@@ -16,8 +16,8 @@ export default async function HomePage() {
   const incompleteCards = students.filter((s) => !s.reportCardDone).length;
 
   const stats = [
-    { label: 'کل دانشجویان', value: total, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'دانشجویان فعال', value: active, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'کل فراگیران', value: total, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'فراگیران فعال', value: active, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'هشدار انصراف', value: warnings, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'کارنامه‌های ناقص', value: incompleteCards, icon: ClipboardX, color: 'text-red-600', bg: 'bg-red-50' },
   ];
@@ -41,9 +41,8 @@ export default async function HomePage() {
       </div>
 
       <div>
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-slate-900">کلاس‌های من</h1>
-          <p className="text-xs text-slate-400">داده‌های زنده از Moodle</p>
+        <div className="mb-4">
+          <h1 className="text-lg font-semibold text-slate-900">فراگیرهای من</h1>
         </div>
         <StudentsTable students={students} />
       </div>

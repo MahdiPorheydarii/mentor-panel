@@ -49,7 +49,7 @@ export default async function CallsPage() {
             <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-amber-800">
-                دانشجویانی که بیش از ۳۰ روز است تماس نداشته‌اید ({noContactStudents.length} نفر):
+                فراگیرانی که بیش از ۳۰ روز است تماس نداشته‌اید ({noContactStudents.length} نفر):
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {noContactStudents.map((s) => {
@@ -75,10 +75,10 @@ export default async function CallsPage() {
           <p className="px-4 py-12 text-center text-slate-400 text-sm">هیچ تماسی ثبت نشده است.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] text-sm">
+            <table className="w-full min-w-[650px] text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">دانشجو</th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">فراگیر</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">تاریخ</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">نتیجه</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">یادداشت</th>
@@ -89,15 +89,15 @@ export default async function CallsPage() {
                   const cfg = resultConfig[log.result];
                   return (
                     <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3.5 font-medium text-slate-800">{log.studentName}</td>
-                      <td className="px-4 py-3.5 text-xs text-slate-600">{formatShortDate(log.date)}</td>
-                      <td className="px-4 py-3.5">
+                      <td className="px-4 py-3.5 font-medium text-slate-800 whitespace-nowrap">{log.studentName}</td>
+                      <td className="px-4 py-3.5 text-xs text-slate-600 whitespace-nowrap">{formatShortDate(log.date)}</td>
+                      <td className="px-4 py-3.5 whitespace-nowrap">
                         <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>
                           <PhoneMissed className="h-3 w-3" />
                           {cfg.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-xs text-slate-500 max-w-[200px] truncate" title={log.notes}>
+                      <td className="px-4 py-3.5 text-xs text-slate-500 min-w-[200px]">
                         {log.notes || '—'}
                       </td>
                     </tr>

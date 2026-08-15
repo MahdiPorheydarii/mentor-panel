@@ -5,7 +5,7 @@ import type { Student, CallLog, AttendanceRecord } from './types';
 function parsePlan(courseName: string): 'premium' | 'economy' | 'vip' {
   if (courseName.includes('VIP') || courseName.includes('vip')) return 'vip';
   if (courseName.includes('اکونومی') || courseName.includes('economy') || courseName.includes('Economy')) return 'economy';
-  return 'premium'; // "پریمیوم" or default
+  return 'premium';
 }
 
 function parseStatus(suspended: unknown): 'active' | 'suspended' | 'withdrawn' {
@@ -17,9 +17,7 @@ function toTimestamp(val: unknown): number {
   if (!val) return 0;
   if (typeof val === 'number') return val;
   const s = String(val);
-  // Unix timestamp (already seconds)
   if (/^\d{10}$/.test(s)) return parseInt(s, 10);
-  // Date string
   const d = new Date(s);
   return isNaN(d.getTime()) ? 0 : Math.floor(d.getTime() / 1000);
 }
@@ -31,13 +29,25 @@ function formatISODate(val: unknown): string {
   return new Date(ts * 1000).toISOString();
 }
 
+// Extract the subject (course type) from a course name.
+// "پایتون ترم سوم ـ پریمیوم" → "پایتون"
+// "App Inventor ترم اول ـ پریمیوم" → "App Inventor"
+function extractSubject(courseName: string): string {
+  const termIdx = courseName.indexOf(' ترم');
+  if (termIdx > 0) return courseName.substring(0, termIdx).trim();
+  return courseName.replace(/\s*ـ\s*(پریمیوم|اقتصادی|VIP|Economy).*/i, '').trim();
+}
+
+// Extract term label from course name.
+// "پایتون ترم سوم ـ پریمیوم" → "ترم سوم"
+function extractTerm(courseName: string): string {
+  const match = courseName.match(/ترم\s+\S+/);
+  return match ? match[0] : '';
+}
+
 export async function fetchStudents(teacher: string): Promise<Student[]> {
   if (!teacher) return [];
 
-  // viewStudentProfile links students to their teacher.
-  // A student may appear multiple times (multiple enrollments). We deduplicate
-  // by student_id and keep the row where educational_sort is the highest
-  // (= most advanced course in the sequence).
   const rows = await runQuery(`
     SELECT
       student_id,
@@ -74,30 +84,38 @@ export async function fetchStudents(teacher: string): Promise<Student[]> {
     const plan = parsePlan(courseName);
     const status = parseStatus(row.suspended);
 
-    // Estimate current week from enrollment date
+    const subject = extractSubject(courseName);
+    const term = extractTerm(courseName) || String(row.course_category4 || '');
+
     const enrolledTs = toTimestamp(row.timeadded);
+    const lastAccessTs = toTimestamp(row.last_access_time_to_site);
     const nowTs = Math.floor(Date.now() / 1000);
     const weeksSinceEnroll = enrolledTs ? Math.max(1, Math.floor((nowTs - enrolledTs) / (7 * 24 * 3600))) : 1;
     const currentWeek = Math.min(weeksSinceEnroll, 24);
+
+    // Withdrawal warning: no login in 14+ days
+    const lastAccessDays = lastAccessTs ? Math.floor((nowTs - lastAccessTs) / (24 * 3600)) : 999;
+    const withdrawalWarning = status === 'active' && lastAccessDays > 14;
 
     return {
       id: String(row.student_id),
       name: fullName || String(row.student_username || '').split('@')[0],
       username: String(row.student_username || ''),
-      role: 'دانشجو',
+      role: 'فراگیر',
       status,
-      withdrawalWarning: false, // populated separately
+      withdrawalWarning,
       course: courseName,
-      term: String(row.course_category4 || ''),
-      termNumber: parseInt(String(row.course_category4 || '').replace(/\D/g, '') || '1', 10) || 1,
+      term,
+      termNumber: parseInt(term.replace(/\D/g, '') || '1', 10) || 1,
       startDate: enrolledTs ? new Date(enrolledTs * 1000).toISOString().split('T')[0] : '',
       currentWeek,
-      currentTopic: `هفته ${currentWeek} — ${String(row.course_category3 || '')}`,
+      currentTopic: `هفته ${currentWeek} — ${subject}`,
       subscriptionPlan: plan,
-      phase: String(row.course_category3 || ''),
+      phase: subject,
       progress: Math.min(100, Math.round((currentWeek / 24) * 100)),
       lastContact: undefined,
-      classesCompleted: Math.max(0, currentWeek - 1),
+      lastAccess: lastAccessTs ? new Date(lastAccessTs * 1000).toISOString() : undefined,
+      classesCompleted: currentWeek,
       totalClasses: 24,
       reportCardDone: false,
     } satisfies Student;
@@ -107,8 +125,6 @@ export async function fetchStudents(teacher: string): Promise<Student[]> {
 export async function fetchWithdrawnStudents(teacher: string): Promise<Student[]> {
   if (!teacher) return [];
 
-  // quit_logs: logtype=1 typically means withdrawal
-  // We join back to viewStudentProfile to get teacher filter
   const rows = await runQuery(`
     SELECT
       u.id as student_id,
@@ -128,32 +144,34 @@ export async function fetchWithdrawnStudents(teacher: string): Promise<Student[]
     LIMIT 100
   `);
 
-  return rows.map((row) => ({
-    id: String(row.student_id),
-    name: (String(row.student_firstname || '') + ' ' + String(row.student_lastname || '')).trim(),
-    username: String(row.student_username || ''),
-    role: 'دانشجو',
-    status: 'withdrawn' as const,
-    withdrawalWarning: false,
-    course: String(row.course_name || ''),
-    term: String(row.course_category4 || ''),
-    termNumber: 1,
-    startDate: '',
-    currentWeek: 0,
-    currentTopic: '',
-    subscriptionPlan: parsePlan(String(row.course_name || '')),
-    phase: String(row.course_category3 || ''),
-    progress: 0,
-    classesCompleted: 0,
-    totalClasses: 24,
-    reportCardDone: false,
-  }));
+  return rows.map((row) => {
+    const courseName = String(row.course_name || '');
+    return {
+      id: String(row.student_id),
+      name: (String(row.student_firstname || '') + ' ' + String(row.student_lastname || '')).trim(),
+      username: String(row.student_username || ''),
+      role: 'فراگیر',
+      status: 'withdrawn' as const,
+      withdrawalWarning: false,
+      course: courseName,
+      term: extractTerm(courseName) || String(row.course_category4 || ''),
+      termNumber: 1,
+      startDate: '',
+      currentWeek: 0,
+      currentTopic: '',
+      subscriptionPlan: parsePlan(courseName),
+      phase: extractSubject(courseName),
+      progress: 0,
+      classesCompleted: 0,
+      totalClasses: 24,
+      reportCardDone: false,
+    };
+  });
 }
 
 export async function fetchCallLogs(teacher: string): Promise<CallLog[]> {
   if (!teacher) return [];
 
-  // Get teacher's Moodle user_id from viewTeachers
   const teacherRows = await runQuery(`
     SELECT id FROM mdl_user WHERE username = '${teacher}' LIMIT 1
   `);
@@ -192,7 +210,6 @@ export async function fetchCallLogs(teacher: string): Promise<CallLog[]> {
 export async function fetchAttendance(teacher: string): Promise<AttendanceRecord[]> {
   if (!teacher) return [];
 
-  // Get teacher's Moodle user_id
   const teacherRows = await runQuery(`
     SELECT id FROM mdl_user WHERE username = '${teacher}' LIMIT 1
   `);
@@ -225,7 +242,7 @@ export async function fetchAttendance(teacher: string): Promise<AttendanceRecord
       studentName: String(row.student_name || ''),
       sessionDate: startTs ? new Date(startTs * 1000).toISOString() : '',
       sessionType: 'BigBlueButton',
-      present: durationSec > 60, // present if attended > 1 minute
+      present: durationSec > 60,
       duration: Math.round(durationSec / 60),
     } satisfies AttendanceRecord;
   });

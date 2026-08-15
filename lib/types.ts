@@ -19,6 +19,7 @@ export interface Student {
   phase: string;
   progress: number;
   lastContact?: string;
+  lastAccess?: string;
   classesCompleted: number;
   totalClasses: number;
   reportCardDone: boolean;
