@@ -1,0 +1,26 @@
+services:
+  mentor-panel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mentor-panel
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      MB_URL: ${MB_URL:-https://mb.yasan.ac}
+      MB_USER: ${MB_USER:-}
+      MB_PASS: ${MB_PASS:-}
+      MB_DB_ID: ${MB_DB_ID:-3}
+      NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
+      AUTH_SECRET: ${AUTH_SECRET:-}
+      TEACHERS_JSON: ${TEACHERS_JSON:-[]}
+    expose:
+      - "3000"
+    extra_hosts:
+      - "mb.yasan.ac:31.7.69.252"
+    networks:
+      - yasan_yasan_network
+
+networks:
+  yasan_yasan_network:
+    external: true
