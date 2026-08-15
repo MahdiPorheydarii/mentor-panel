@@ -1,11 +1,14 @@
 import { Users, UserCheck, AlertTriangle, ClipboardX } from 'lucide-react';
 import { fetchStudents } from '@/lib/queries';
 import { StudentsTable } from '@/components/dashboard/StudentsTable';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const students = await fetchStudents();
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const students = await fetchStudents(teacher);
 
   const total = students.length;
   const active = students.filter((s) => s.status === 'active').length;

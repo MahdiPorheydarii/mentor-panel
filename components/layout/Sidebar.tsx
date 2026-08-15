@@ -11,9 +11,10 @@ import {
   ClipboardList,
   BarChart3,
   GraduationCap,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { instructorInfo } from '@/lib/mock-data';
+import { logoutAction } from '@/app/(dashboard)/actions';
 
 const navItems = [
   { label: 'کلاس‌های من', href: '/', icon: LayoutDashboard },
@@ -25,12 +26,18 @@ const navItems = [
   { label: 'وضعیت کلاس‌ها', href: '/reports/classes', icon: BarChart3 },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  username: string;
+  name: string;
+}
+
+export function Sidebar({ username, name }: SidebarProps) {
   const pathname = usePathname();
 
-  const initials = instructorInfo.name
+  const initials = name
     .split(' ')
     .map((w) => w[0])
+    .filter(Boolean)
     .slice(0, 2)
     .join('');
 
@@ -43,7 +50,7 @@ export function Sidebar() {
         </div>
         <div>
           <p className="text-sm font-semibold text-white">پنل مربی</p>
-          <p className="text-xs text-slate-400">همگپ</p>
+          <p className="text-xs text-slate-400">یاسان</p>
         </div>
       </div>
 
@@ -69,16 +76,25 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Instructor profile at bottom */}
+      {/* Teacher profile + logout */}
       <div className="border-t border-slate-800 px-4 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-slate-700 text-sm font-semibold text-slate-200">
-            {initials}
+            {initials || '?'}
           </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-200">{instructorInfo.name}</p>
-            <p className="truncate text-xs text-slate-500">{instructorInfo.username}</p>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-slate-200">{name || 'مربی'}</p>
+            <p className="truncate text-xs text-slate-500" dir="ltr">{username}</p>
           </div>
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              title="خروج"
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-800 hover:text-red-400 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
         </div>
       </div>
     </aside>

@@ -1,11 +1,14 @@
 import { fetchAttendance } from '@/lib/queries';
 import { formatShortDate } from '@/lib/utils';
 import { CalendarCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AttendancePage() {
-  const records = await fetchAttendance();
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const records = await fetchAttendance(teacher);
   const sorted = [...records].sort((a, b) => b.sessionDate.localeCompare(a.sessionDate));
   const presentCount = sorted.filter((r) => r.present).length;
   const rate = sorted.length > 0 ? Math.round((presentCount / sorted.length) * 100) : 0;

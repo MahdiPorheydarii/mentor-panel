@@ -1,5 +1,5 @@
 // Server-only data access — wraps Metabase SQL queries into typed results
-import { runQuery, getTeacherUsername } from './metabase';
+import { runQuery } from './metabase';
 import type { Student, CallLog, AttendanceRecord } from './types';
 
 function parsePlan(courseName: string): 'premium' | 'economy' | 'vip' {
@@ -31,8 +31,7 @@ function formatISODate(val: unknown): string {
   return new Date(ts * 1000).toISOString();
 }
 
-export async function fetchStudents(): Promise<Student[]> {
-  const teacher = getTeacherUsername();
+export async function fetchStudents(teacher: string): Promise<Student[]> {
   if (!teacher) return [];
 
   // viewStudentProfile links students to their teacher.
@@ -105,8 +104,7 @@ export async function fetchStudents(): Promise<Student[]> {
   });
 }
 
-export async function fetchWithdrawnStudents(): Promise<Student[]> {
-  const teacher = getTeacherUsername();
+export async function fetchWithdrawnStudents(teacher: string): Promise<Student[]> {
   if (!teacher) return [];
 
   // quit_logs: logtype=1 typically means withdrawal
@@ -152,8 +150,7 @@ export async function fetchWithdrawnStudents(): Promise<Student[]> {
   }));
 }
 
-export async function fetchCallLogs(): Promise<CallLog[]> {
-  const teacher = getTeacherUsername();
+export async function fetchCallLogs(teacher: string): Promise<CallLog[]> {
   if (!teacher) return [];
 
   // Get teacher's Moodle user_id from viewTeachers
@@ -192,8 +189,7 @@ export async function fetchCallLogs(): Promise<CallLog[]> {
   } satisfies CallLog & { operationName: string }));
 }
 
-export async function fetchAttendance(): Promise<AttendanceRecord[]> {
-  const teacher = getTeacherUsername();
+export async function fetchAttendance(teacher: string): Promise<AttendanceRecord[]> {
   if (!teacher) return [];
 
   // Get teacher's Moodle user_id

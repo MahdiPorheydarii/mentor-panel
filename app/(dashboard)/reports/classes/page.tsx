@@ -1,10 +1,13 @@
 import { fetchStudents } from '@/lib/queries';
 import { BarChart3 } from 'lucide-react';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ClassesPage() {
-  const students = await fetchStudents();
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const students = await fetchStudents(teacher);
   const active = students.filter((s) => s.status === 'active');
   const sorted = [...active].sort(
     (a, b) => b.classesCompleted / b.totalClasses - a.classesCompleted / a.totalClasses,

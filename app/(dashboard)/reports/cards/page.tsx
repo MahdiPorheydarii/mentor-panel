@@ -1,10 +1,13 @@
 import { fetchStudents } from '@/lib/queries';
 import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function CardsPage() {
-  const students = await fetchStudents();
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const students = await fetchStudents(teacher);
   const total = students.length;
   const done = students.filter((s) => s.reportCardDone).length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;

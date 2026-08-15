@@ -63,8 +63,4 @@ export async function runQuery(sql: string): Promise<Row[]> {
   });
 }
 
-export function getTeacherUsername(): string {
-  return process.env.TEACHER_USERNAME || '';
-}
-
 export { MB_DB_ID };

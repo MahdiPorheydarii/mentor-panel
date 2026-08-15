@@ -2,11 +2,14 @@ import { fetchWithdrawnStudents } from '@/lib/queries';
 import { PlanBadge } from '@/components/dashboard/PlanBadge';
 import { formatShortDate } from '@/lib/utils';
 import { UserX } from 'lucide-react';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function WithdrawnPage() {
-  const withdrawn = await fetchWithdrawnStudents();
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const withdrawn = await fetchWithdrawnStudents(teacher);
 
   return (
     <div className="space-y-6">

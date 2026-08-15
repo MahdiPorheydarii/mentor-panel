@@ -2,11 +2,14 @@ import { fetchStudents } from '@/lib/queries';
 import { PlanBadge } from '@/components/dashboard/PlanBadge';
 import { formatShortDate } from '@/lib/utils';
 import { UserMinus } from 'lucide-react';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SuspendedPage() {
-  const allStudents = await fetchStudents();
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const allStudents = await fetchStudents(teacher);
   const suspended = allStudents.filter((s) => s.status === 'suspended');
 
   return (

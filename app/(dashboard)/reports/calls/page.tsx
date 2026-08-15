@@ -2,6 +2,7 @@ import { fetchCallLogs, fetchStudents } from '@/lib/queries';
 import { formatShortDate, daysSince } from '@/lib/utils';
 import { Phone, PhoneMissed, AlertCircle } from 'lucide-react';
 import type { CallResult } from '@/lib/types';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,18 +13,16 @@ const resultConfig: Record<CallResult, { label: string; className: string }> = {
 };
 
 export default async function CallsPage() {
-  const [logs, students] = await Promise.all([fetchCallLogs(), fetchStudents()]);
+  const session = await getSession();
+  const teacher = session?.username ?? '';
+  const [logs, students] = await Promise.all([fetchCallLogs(teacher), fetchStudents(teacher)]);
 
-  // Build a map of student_id → last call date from logs
   const lastCallByStudent = new Map<string, string>();
   for (const log of logs) {
     const existing = lastCallByStudent.get(log.studentId);
-    if (!existing || log.date > existing) {
-      lastCallByStudent.set(log.studentId, log.date);
-    }
+    if (!existing || log.date > existing) lastCallByStudent.set(log.studentId, log.date);
   }
 
-  // Students who haven't been contacted in 30+ days (or never)
   const noContactStudents = students.filter((s) => {
     const last = lastCallByStudent.get(s.id);
     if (!last) return true;
