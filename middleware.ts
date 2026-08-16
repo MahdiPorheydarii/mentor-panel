@@ -7,7 +7,7 @@ const secret = new TextEncoder().encode(
 );
 
 const PUBLIC_PATHS = ['/login'];
-const SKIP_PREFIXES = ['/api/auth', '/_next', '/favicon.ico'];
+const SKIP_PREFIXES = ['/api/auth', '/api/lti', '/_next', '/favicon.ico'];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

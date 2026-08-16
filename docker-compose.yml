@@ -14,6 +14,10 @@ services:
       NODE_TLS_REJECT_UNAUTHORIZED: ${NODE_TLS_REJECT_UNAUTHORIZED:-0}
       AUTH_SECRET: ${AUTH_SECRET:-}
       DATABASE_URL: ${DATABASE_URL:-postgresql://yasan:judge0_password@postgres:5432/yasan}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-}
+      LTI_PRIVATE_KEY_B64: ${LTI_PRIVATE_KEY_B64:-}
+      LTI_PUBLIC_KEY_B64: ${LTI_PUBLIC_KEY_B64:-}
+      LTI_KID: ${LTI_KID:-lti-key-1}
     expose:
       - "3000"
     extra_hosts:
