@@ -3,13 +3,13 @@
 import { useState, useMemo } from 'react';
 import { Search, CheckCircle2, XCircle } from 'lucide-react';
 import type { AttendanceRecord } from '@/lib/types';
+import { formatShortDate } from '@/lib/utils';
 
 interface Props {
   records: AttendanceRecord[];
-  formatShortDate: (d: string) => string;
 }
 
-export function AttendanceClient({ records, formatShortDate }: Props) {
+export function AttendanceClient({ records }: Props) {
   const [search, setSearch] = useState('');
   const [presenceFilter, setPresenceFilter] = useState<'all' | 'present' | 'absent'>('all');
   const [dateFrom, setDateFrom] = useState('');

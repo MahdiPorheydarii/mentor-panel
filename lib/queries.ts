@@ -3,8 +3,8 @@ import { runQuery } from './metabase';
 import type { Student, CallLog, AttendanceRecord } from './types';
 
 function parsePlan(courseName: string): 'premium' | 'economy' | 'vip' {
-  if (courseName.includes('VIP') || courseName.includes('vip')) return 'vip';
-  if (courseName.includes('اکونومی') || courseName.includes('economy') || courseName.includes('Economy')) return 'economy';
+  if (courseName.includes('VIP') || courseName.includes('vip') || courseName.includes('وی آی پی')) return 'vip';
+  if (courseName.includes('اکونومی') || courseName.includes('economy') || courseName.includes('Economy') || courseName.includes('اقتصادی')) return 'economy';
   return 'premium';
 }
 
@@ -90,8 +90,10 @@ export async function fetchStudents(teacher: string): Promise<Student[]> {
     const enrolledTs = toTimestamp(row.timeadded);
     const lastAccessTs = toTimestamp(row.last_access_time_to_site);
     const nowTs = Math.floor(Date.now() / 1000);
-    const weeksSinceEnroll = enrolledTs ? Math.max(1, Math.floor((nowTs - enrolledTs) / (7 * 24 * 3600))) : 1;
-    const currentWeek = Math.min(weeksSinceEnroll, 24);
+
+    // educational_sort = highest lesson/week the student has reached in this course
+    const eduSort = Number(row.educational_sort) || 0;
+    const currentWeek = eduSort > 0 ? Math.min(eduSort, 24) : 1;
 
     // Withdrawal warning: no login in 14+ days
     const lastAccessDays = lastAccessTs ? Math.floor((nowTs - lastAccessTs) / (24 * 3600)) : 999;

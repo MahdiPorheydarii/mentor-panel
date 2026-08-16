@@ -1,5 +1,4 @@
 import { fetchAttendance } from '@/lib/queries';
-import { formatShortDate } from '@/lib/utils';
 import { CalendarCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { AttendanceClient } from './AttendanceClient';
@@ -39,7 +38,7 @@ export default async function AttendancePage() {
         ))}
       </div>
 
-      <AttendanceClient records={sorted} formatShortDate={formatShortDate} />
+      <AttendanceClient records={sorted} />
     </div>
   );
 }

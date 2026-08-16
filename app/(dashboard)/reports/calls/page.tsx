@@ -57,10 +57,7 @@ export default async function CallsPage() {
                   return (
                     <span key={s.id} className="rounded-full bg-amber-100 border border-amber-300 px-3 py-1 text-xs font-medium text-amber-800">
                       {s.name}
-                      {last
-                        ? <span className="mr-1 text-amber-600">({daysSince(last)} روز)</span>
-                        : <span className="mr-1 text-amber-600">(بدون تماس)</span>
-                      }
+                      {last && <span className="mr-1 text-amber-600">({daysSince(last)} روز)</span>}
                     </span>
                   );
                 })}

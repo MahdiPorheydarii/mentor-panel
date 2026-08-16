@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { loginAction } from './actions';
-import { Eye, EyeOff, LogIn, BookOpen } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [isPending, startTransition] = useTransition();
@@ -23,9 +24,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-200 mb-4">
-            <BookOpen className="h-7 w-7 text-white" />
-          </div>
+          <Image src="/yasan-logo.png" alt="یاسان" width={80} height={80} className="mb-4 rounded-xl" priority />
           <h1 className="text-2xl font-bold text-slate-900">پنل مربیان</h1>
           <p className="text-sm text-slate-500 mt-1">یاسان</p>
         </div>
@@ -95,9 +94,6 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          برای دریافت دسترسی با مدیریت تماس بگیرید.
-        </p>
       </div>
     </div>
   );

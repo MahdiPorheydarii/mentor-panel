@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
@@ -8,7 +9,6 @@ import {
   CalendarCheck,
   ClipboardList,
   BarChart3,
-  GraduationCap,
   LogOut,
   ChevronDown,
   Users,
@@ -54,9 +54,7 @@ export function Sidebar({ username, name }: SidebarProps) {
     <aside className="flex h-full w-64 flex-shrink-0 flex-col bg-slate-900">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600">
-          <GraduationCap className="h-5 w-5 text-white" />
-        </div>
+        <Image src="/yasan-logo.png" alt="یاسان" width={36} height={36} className="rounded-lg flex-shrink-0" />
         <div>
           <p className="text-sm font-semibold text-white">پنل مربی</p>
           <p className="text-xs text-slate-400">یاسان</p>

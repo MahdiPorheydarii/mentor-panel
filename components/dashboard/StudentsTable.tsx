@@ -115,7 +115,10 @@ export function StudentsTable({ students }: { students: Student[] }) {
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-slate-800">{student.name}</span>
                           {student.withdrawalWarning && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+                            <span
+                              title="این فراگیر بیش از ۱۴ روز است که وارد سایت نشده و در خطر انصراف است."
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-medium text-amber-700 cursor-help"
+                            >
                               <AlertTriangle className="h-2.5 w-2.5" />
                               هشدار
                             </span>

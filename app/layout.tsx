@@ -12,6 +12,10 @@ const vazirmatn = Vazirmatn({
 export const metadata: Metadata = {
   title: 'پنل مربی | یاسان',
   description: 'پنل مدیریت مربیان یاسان',
+  icons: {
+    icon: '/yasan-icon.svg',
+    apple: '/yasan-logo.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
