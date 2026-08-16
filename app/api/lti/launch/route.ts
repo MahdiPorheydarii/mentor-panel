@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     cookieStore.set('mentor_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none', // required for cross-origin iframe embedding in Moodle
+      sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
